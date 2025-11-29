@@ -1,0 +1,8 @@
+tweepy
+requests
+python-dotenv
+textblob
+matplotlib
+streamlit
+pandas
+google-generativeai
