@@ -1,0 +1,97 @@
+# Cursor project rules for `social_media_analyser`
+
+## Tech stack overview
+
+- **Backend (Python)**
+  - `api_server.py` – FastAPI app exposing `/health`, `/api/dashboard`, `/api/ai/insights`, `/api/ai/chat`.
+  - Core logic in:
+    - `fetchers.py` – Twitter/Instagram/News fetchers. Twitter uses Tweepy and falls back to mock generators.
+    - `tweet_generator.py` – high‑volume mock data for travel/politics/sports/cinema.
+    - `data_processor.py` – converts raw tweets to topic‑specific DataFrames (`travel`, `politics`, `sports`, `cinema`).
+    - `ai_agent.py` – Gemini‑based insight/metric generation (optional).
+- **Frontend**
+  - Next.js 14 App Router project under `frontend/` (TypeScript + Tailwind).
+  - Main pages: `app/page.tsx`, `app/travel/page.tsx`, `app/politics/page.tsx`, `app/sports/page.tsx`, `app/cinema/page.tsx`.
+  - Shared dashboard logic in `components/DashboardShell.tsx`.
+  - API client in `lib/api.ts` calling the FastAPI backend via `NEXT_PUBLIC_API_BASE_URL`.
+
+## Environment & config
+
+- **Never commit secrets**:
+  - `.env` is git‑ignored; do not add it or hard‑code any keys.
+  - Required env vars (document, don’t change behavior silently):
+    - `TWITTER_BEARER_TOKEN` – enables live Twitter/X data in `TwitterFetcher`.
+    - `GEMINI_API_KEY` – enables LLM features in `ai_agent.py`.
+    - Optional: `INSTAGRAM_ACCESS_TOKEN`, `INSTAGRAM_BUSINESS_ACCOUNT_ID`, `NEWS_API_KEY`.
+    - `NEXT_PUBLIC_API_BASE_URL` – used only in the Next.js app.
+- **Preferred commands**:
+  - Backend: `source venv/bin/activate && python api_server.py`.
+  - Frontend: from `frontend/` → `npm install` (once) then `npm run dev`.
+  - Do not commit `frontend/node_modules/` or `frontend/.next/` (already ignored; keep it that way).
+
+## Data flow & APIs
+
+- For each topic (`travel`, `politics`, `sports`, `cinema`):
+  - FastAPI endpoint `/api/dashboard`:
+    - Accepts query params: `topic`, `fromDate`, `toDate`, `startHour`, `endHour`, `mode`.
+    - Calls `TwitterFetcher` to fetch real or mock tweets.
+    - Uses `process_data` to shape them into a DataFrame, then returns `rows` + `summary`.
+  - Frontend:
+    - Uses `getDashboard` in `lib/api.ts` to fetch typed responses.
+    - `DashboardShell` computes aggregates (India vs Karnataka, sport vs engagement, etc.) and renders Recharts graphs.
+- **Edge behavior**:
+  - When `TWITTER_BEARER_TOKEN` is missing or invalid:
+    - Backend prints `Twitter client not initialized. Returning mock data.` and uses generators.
+    - Frontend should still function; don’t crash on null/empty fields.
+  - When `GEMINI_API_KEY` is missing:
+    - `GeminiAgent` should return safe fallback strings; don’t rely on LLM being present.
+
+## Future MongoDB backend (persistence)
+
+- Current system is stateless per request; all data is in memory from live API or mock generators.
+- Future direction (follow `persistence.md` and `api-contracts.md`):
+  - Introduce a repository layer (e.g. `repositories/tweets_repository.py`) so FastAPI endpoints don’t talk directly to MongoDB.
+  - All persistence changes must:
+    - Preserve existing API contracts defined in `api-contracts.md`.
+    - Keep the React UI **unchanged** (only backend implementation swaps).
+  - When adding MongoDB:
+    - Add a config flag/env var (e.g. `DATA_BACKEND=mongo|twitter_mock`) and avoid branching on magic strings throughout the code.
+
+## Coding guidelines
+
+- **Backend (Python)**
+  - Prefer small, composable functions over pushing more logic into `api_server.py`.
+  - Keep data‑shaping logic inside `data_processor.py` or dedicated helpers; avoid duplicating aggregation in FastAPI routes and in the frontend.
+  - Maintain topic‑specific behavior via explicit conditionals (`topic == "travel"`, etc.), not by inferring from arbitrary strings.
+  - When changing data schemas, update:
+    - `api-contracts.md`.
+    - `frontend/lib/types.ts`.
+    - Any dependent aggregations in `DashboardShell.tsx`.
+- **Frontend (Next.js)**
+  - Use TypeScript types from `lib/types.ts` for all API responses.
+  - Keep data fetching in `lib/api.ts` and the `DashboardShell` (and future feature components) rather than in individual pages.
+  - Use Tailwind utility classes; don’t introduce a second styling system.
+  - For charts, stick to Recharts and keep each chart configuration localized (no global mutable chart state).
+
+## Testing & development
+
+- For local dev without real APIs:
+  - Omit `TWITTER_BEARER_TOKEN`, `GEMINI_API_KEY`, etc. – the app should run fully on mock data.
+  - Use small date/hour windows when debugging performance.
+- When adding tests:
+  - Prefer topic‑level tests that validate processed shapes from `process_data` for each topic.
+  - For backend integration, hit `/api/dashboard` with mock env and assert structural correctness (e.g. keys present, non‑negative engagement).
+  - For frontend, test critical aggregations (e.g. sports person ranking) with small mocked responses rather than full API calls.
+
+## Edge cases to keep in mind
+
+- Twitter/X API issues:
+  - Rate limits, partial data, or missing `public_metrics` fields.
+  - Tweets without `location` or with states not in `CITY_STATE_MAP` (should fall back to `"Unknown"` without crashing).
+- Large data volumes:
+  - `api_server` already samples/upsamples to a target size (100,000 rows). Keep any new heavy operations vectorized (Pandas) and avoid Python loops where possible.
+- Frontend robustness:
+  - All charts and stat cards must handle `data.rows.length === 0` gracefully (show empty states, not errors).
+  - Don’t assume Karnataka data is always present; DB4s should show a friendly message when there is no Karnataka subset.
+
+
