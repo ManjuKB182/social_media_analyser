@@ -1,0 +1,43 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-gradient-to-br from-softBg via-softBg to-white text-slate-900 font-sans;
+}
+
+.page-shell {
+  @apply min-h-screen flex flex-col;
+}
+
+.page-main {
+  @apply flex-1 flex flex-col max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 gap-6;
+}
+
+.page-header {
+  @apply text-center space-y-2;
+}
+
+.page-title {
+  @apply text-4xl sm:text-5xl font-extrabold bg-gradient-to-r from-tealPrimary to-warmAccent bg-clip-text text-transparent tracking-tight;
+}
+
+.page-subtitle {
+  @apply text-base sm:text-lg text-slate-600 font-medium;
+}
+
+.card {
+  @apply bg-white/95 rounded-2xl shadow-card-soft border border-slate-200/60;
+}
+
+.tab-pill {
+  @apply inline-flex items-center justify-center px-4 py-2 rounded-xl text-sm font-semibold text-slate-700 hover:text-tealPrimary transition-colors;
+}
+
+.tab-pill-active {
+  @apply bg-gradient-to-r from-tealPrimary to-warmAccent text-white shadow-lg;
+}
+
+

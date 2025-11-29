@@ -6,3 +6,6 @@ matplotlib
 streamlit
 pandas
 google-generativeai
+fastapi
+uvicorn
+pydantic

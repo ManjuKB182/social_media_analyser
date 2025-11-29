@@ -44,6 +44,10 @@ CITY_STATE_MAP = {
     "Pune": "Maharashtra",
     "Amritsar": "Punjab",
     "Jaisalmer": "Rajasthan",
+    "Lucknow": "Uttar Pradesh",
+    "Patna": "Bihar",
+    "Bhopal": "Madhya Pradesh",
+    "Ahmedabad": "Gujarat",
 }
 
 # Karnataka Political Parties
@@ -51,12 +55,40 @@ KARNATAKA_PARTIES = ["BJP", "Congress", "JDS", "AAP"]
 
 # Karnataka Politicians
 KARNATAKA_POLITICIANS = [
-    "Siddaramaiah", "DK Shivakumar", "BS Yediyurappa", 
-    "Basavaraj Bommai", "HD Kumaraswamy", "HD Deve Gowda"
+    "Siddaramaiah",
+    "DK Shivakumar",
+    "BS Yediyurappa",
+    "Basavaraj Bommai",
+    "HD Kumaraswamy",
+    "HD Deve Gowda",
 ]
+
+# National-level Politicians (India-wide context)
+NATIONAL_POLITICIANS = [
+    "Narendra Modi",
+    "Amit Shah",
+    "Rahul Gandhi",
+    "Priyanka Gandhi",
+    "Arvind Kejriwal",
+    "Yogi Adityanath",
+]
+
+ALL_POLITICIANS = KARNATAKA_POLITICIANS + NATIONAL_POLITICIANS
 
 # Sports Categories
 SPORTS_CATEGORIES = ["Cricket", "Football", "Kabaddi", "Hockey", "Volleyball", "Chess"]
+
+# Sports persons (for mock data analytics)
+SPORTS_PERSONS = [
+    "Virat Kohli",
+    "Rohit Sharma",
+    "MS Dhoni",
+    "Hardik Pandya",
+    "Sunil Chhetri",
+    "PV Sindhu",
+    "Neeraj Chopra",
+    "Saina Nehwal",
+]
 
 # Cinema industries
 CINEMA_INDUSTRIES = ["Hollywood", "Bollywood", "Sandalwood", "Tollywood", "Mollywood"]
@@ -134,14 +166,14 @@ def process_data(tweets, topic="travel"):
             # For politics, extract party and politician mentions
             party = "Other"
             politician = "Other"
-            
+
             text_lower = tweet['text'].lower()
             for p in KARNATAKA_PARTIES:
                 if p.lower() in text_lower:
                     party = p
                     break
-            
-            for pol in KARNATAKA_POLITICIANS:
+
+            for pol in ALL_POLITICIANS:
                 if pol.lower() in text_lower:
                     politician = pol
                     break
@@ -173,13 +205,19 @@ def process_data(tweets, topic="travel"):
             })
         
         elif topic == "sports":
-            # For sports, extract sport category
+            # For sports, extract sport category & (mock) sports person
             sport = "Other"
+            sports_person = "Other"
             
             text_lower = tweet['text'].lower()
             for s in SPORTS_CATEGORIES:
                 if s.lower() in text_lower:
                     sport = s
+                    break
+
+            for sp in SPORTS_PERSONS:
+                if sp.lower() in text_lower:
+                    sports_person = sp
                     break
 
             # Best-effort State/Location from raw location text
@@ -194,6 +232,7 @@ def process_data(tweets, topic="travel"):
             
             data.append({
                 "Sport": sport,
+                "SportsPerson": sports_person,
                 "Location": city_name,
                 "State": state,
                 "Text": tweet['text'],

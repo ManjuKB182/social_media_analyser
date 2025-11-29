@@ -220,6 +220,8 @@ class TweetGenerator:
             "Test cricket at its finest! Great bowling #cricket",
             "T20 World Cup excitement building! #cricket #worldcup",
             "Rohit Sharma's captaincy is brilliant #cricket #india",
+            "MS Dhoni finishes in style! What a legend #cricket #india",
+            "Hardik Pandya all-round show wins the match #cricket",
             "Cricket fever! Stadium is packed today #cricket",
             "Historic cricket victory for India! #cricket #celebration"
         ],
@@ -255,6 +257,9 @@ class TweetGenerator:
             "Pro Volleyball League is exciting! #volleyball #pvl",
             "Indian volleyball team improving! #volleyball",
             "Beach volleyball tournament! #volleyball #sports",
+            "PV Sindhu inspires youngsters with her performance #badminton",
+            "Neeraj Chopra trending after major athletics win #india",
+            "Saina Nehwal back in form in latest tournament #badminton",
             "Volleyball spike was incredible! #volleyball",
             "Indoor volleyball finals today! #volleyball #championship"
         ],
@@ -270,44 +275,102 @@ class TweetGenerator:
     }
     
     POLITICIAN_TEMPLATES = {
+        # Karnataka leaders
         "Siddaramaiah": [
             "Siddaramaiah promises free electricity #congress",
             "Siddaramaiah criticizes BJP policies #karnataka",
             "Siddaramaiah addresses rally in Mysore #politics",
-            "Siddaramaiah speaks on healthcare #karnataka"
+            "Siddaramaiah speaks on healthcare #karnataka",
         ],
         "DK Shivakumar": [
             "DK Shivakumar meets farmers #congress",
             "DK Shivakumar promises infrastructure #karnataka",
             "DK Shivakumar addresses rally #politics",
-            "DK Shivakumar inaugurates new office #karnataka"
+            "DK Shivakumar inaugurates new office #karnataka",
         ],
         "BS Yediyurappa": [
             "BS Yediyurappa comments on coalition politics #bjp",
             "BS Yediyurappa meets party workers #karnataka",
             "BS Yediyurappa speaks on development #politics",
-            "BS Yediyurappa inaugurates hospital #karnataka"
+            "BS Yediyurappa inaugurates hospital #karnataka",
         ],
         "Basavaraj Bommai": [
             "Basavaraj Bommai inaugurates metro line #bjp",
             "Basavaraj Bommai announces IT park #karnataka",
             "Basavaraj Bommai meets startup founders #politics",
-            "Basavaraj Bommai addresses farmers #karnataka"
+            "Basavaraj Bommai addresses farmers #karnataka",
         ],
         "HD Kumaraswamy": [
             "HD Kumaraswamy meets farmers #jds",
             "HD Kumaraswamy criticizes policies #karnataka",
             "HD Kumaraswamy promises irrigation projects #politics",
-            "HD Kumaraswamy speaks on rural development #karnataka"
+            "HD Kumaraswamy speaks on rural development #karnataka",
         ],
         "HD Deve Gowda": [
             "HD Deve Gowda criticizes major parties #jds",
             "HD Deve Gowda speaks on farmer issues #karnataka",
             "HD Deve Gowda addresses party workers #politics",
-            "HD Deve Gowda on regional politics #karnataka"
-        ]
+            "HD Deve Gowda on regional politics #karnataka",
+        ],
+        # National leaders
+        "Narendra Modi": [
+            "Prime Minister Narendra Modi addresses nation on development #india",
+            "Narendra Modi holds massive rally in Uttar Pradesh #elections",
+            "Supporters praise Narendra Modi for infrastructure projects #bjp",
+            "Narendra Modi speaks about digital India initiatives #india",
+        ],
+        "Amit Shah": [
+            "Amit Shah strategises for upcoming state elections #bjp",
+            "Amit Shah addresses party workers in Gujarat #politics",
+            "Amit Shah comments on national security #india",
+            "Home Minister Amit Shah visits border areas #security",
+        ],
+        "Rahul Gandhi": [
+            "Rahul Gandhi criticizes government policies in Parliament #congress",
+            "Rahul Gandhi leads Bharat Jodo Yatra across India #politics",
+            "Supporters gather to hear Rahul Gandhi speak #india",
+            "Rahul Gandhi focuses on youth unemployment issues #congress",
+        ],
+        "Priyanka Gandhi": [
+            "Priyanka Gandhi campaigns for Congress in Uttar Pradesh #elections",
+            "Priyanka Gandhi holds rally focused on women empowerment #politics",
+            "Supporters cheer for Priyanka Gandhi in Lucknow #congress",
+            "Priyanka Gandhi addresses farmers' issues #india",
+        ],
+        "Arvind Kejriwal": [
+            "Arvind Kejriwal announces new education reforms in Delhi #aap",
+            "Arvind Kejriwal criticizes central government policies #politics",
+            "Delhi CM Arvind Kejriwal focuses on health infrastructure #india",
+            "Arvind Kejriwal addresses rally in Punjab #elections",
+        ],
+        "Yogi Adityanath": [
+            "Yogi Adityanath reviews law and order situation in UP #bjp",
+            "Yogi Adityanath launches new welfare scheme #uttarpradesh",
+            "Supporters praise Yogi Adityanath for development work #politics",
+            "Yogi Adityanath addresses rally in Varanasi #elections",
+        ],
     }
     
+    # Cities used for political geography (India-wide + Karnataka)
+    POLITICS_LOCATIONS = [
+        # National / major metros
+        "Delhi",
+        "Mumbai",
+        "Kolkata",
+        "Chennai",
+        "Hyderabad",
+        "Bangalore",
+        "Ahmedabad",
+        "Lucknow",
+        "Patna",
+        "Bhopal",
+        "Jaipur",
+        # Some Karnataka focus
+        "Mysore",
+        "Mangaluru",
+        "Hubli",
+    ]
+
     @staticmethod
     def generate_travel_tweets(count=5000, from_date=None, end_date=None):
         """Generate travel tweets"""
@@ -392,8 +455,7 @@ class TweetGenerator:
         tweets = []
         parties = list(TweetGenerator.POLITICS_TEMPLATES.keys())
         politicians = list(TweetGenerator.POLITICIAN_TEMPLATES.keys())
-        # Reuse travel locations for India-wide geography
-        travel_locs = list(TweetGenerator.TRAVEL_TEMPLATES.keys())
+        politics_locs = list(TweetGenerator.POLITICS_LOCATIONS)
         now = datetime.now()
         
         # Use provided dates or default to today
@@ -412,7 +474,7 @@ class TweetGenerator:
         for h in range(total_hours):
             this_hour = from_date + timedelta(hours=h)
             for _ in range(min_per_hour):
-                loc = random.choice(travel_locs)
+                loc = random.choice(politics_locs)
                 if random.random() < 0.6:
                     party = random.choice(parties)
                     text = random.choice(TweetGenerator.POLITICS_TEMPLATES[party])
@@ -441,7 +503,7 @@ class TweetGenerator:
                     "user_location_raw": f"{loc}, India",
                 })
         while len(tweets) < count:
-            loc = random.choice(travel_locs)
+            loc = random.choice(politics_locs)
             if random.random() < 0.6:
                 party = random.choice(parties)
                 text = random.choice(TweetGenerator.POLITICS_TEMPLATES[party])
